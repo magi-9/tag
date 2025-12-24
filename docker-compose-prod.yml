@@ -1,0 +1,150 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: tag_game_db_prod
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Message Broker
+  redis:
+    image: redis:7-alpine
+    container_name: tag_game_redis_prod
+    command: redis-server --port 6380 --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data_prod:/data
+    ports:
+      - "6380:6380"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6380", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django Backend API
+  backend:
+    image: ghcr.io/magi-9/tag-game-backend:latest
+    container_name: tag_game_backend_prod
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env.prod
+    environment:
+      PYTHONUNBUFFERED: 1
+      PORT: 8050
+    ports:
+      - "8050:8050"
+    volumes:
+      - static_volume_prod:/app/staticfiles
+      - media_volume_prod:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8050 --workers 4 --worker-class uvicorn.workers.UvicornWorker"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8050/api/game/settings/current/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Celery Worker
+  celery:
+    image: ghcr.io/magi-9/tag-game-backend:latest
+    container_name: tag_game_celery_prod
+    env_file:
+      - ./backend/.env.prod
+    environment:
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      - backend
+      - redis
+    restart: unless-stopped
+    command: celery -A config worker -l info --concurrency=2
+
+  # Celery Beat Scheduler
+  celery-beat:
+    image: ghcr.io/magi-9/tag-game-backend:latest
+    container_name: tag_game_celery_beat_prod
+    env_file:
+      - ./backend/.env.prod
+    environment:
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      - backend
+      - redis
+    restart: unless-stopped
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+  # React Frontend
+  frontend:
+    image: ghcr.io/magi-9/tag-game-frontend:latest
+    container_name: tag_game_frontend_prod
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://tag.tommag.xyz/api
+        VITE_WS_URL: wss://tag.tommag.xyz/ws/game/
+        VITE_VAPID_PUBLIC_KEY: ${VITE_VAPID_PUBLIC_KEY}
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: tag_game_nginx_prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-prod.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - static_volume_prod:/app/staticfiles:ro
+      - media_volume_prod:/app/media:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data_prod:
+  redis_data_prod:
+  static_volume_prod:
+  media_volume_prod:
+
+networks:
+  default:
+    name: tag_game_network_prod

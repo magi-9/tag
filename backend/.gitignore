@@ -32,3 +32,4 @@ media/
 staticfiles/
 .DS_Store
 *.log
+.env.prod
