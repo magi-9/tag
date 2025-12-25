@@ -1,0 +1,92 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: tag_game_db_local
+    env_file:
+      - ./backend/.env.prod
+    environment:
+      POSTGRES_DB: ${DB_NAME:-tag_game}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${DB_USER:-postgres}"]
+
+  redis:
+    image: redis:7-alpine
+    container_name: tag_game_redis_local
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tag_game_backend_local
+    env_file:
+      - ./backend/.env.prod
+    volumes:
+      - static_volume_local:/app/staticfiles
+      - media_volume_local:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py create_admin &&
+             python manage.py collectstatic --noinput &&
+             daphne -b 0.0.0.0 -p 8050 config.asgi:application"
+
+  celery:
+    build: ./backend
+    container_name: tag_game_celery_local
+    env_file:
+      - ./backend/.env.prod
+    depends_on:
+      - backend
+      - redis
+    restart: unless-stopped
+    command: celery -A config worker -l info
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://tag.tomag.xyz/api
+        VITE_WS_URL: wss://tag.tomag.xyz/ws/game/
+    container_name: tag_game_frontend_local
+    volumes:
+      - frontend_dist_local:/usr/share/nginx/html
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: tag_game_nginx_local
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx-local.conf:/etc/nginx/nginx.conf:ro
+      - frontend_dist_local:/usr/share/nginx/html:ro
+      - static_volume_local:/app/staticfiles:ro
+      - media_volume_local:/app/media:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+volumes:
+  postgres_data_local:
+  frontend_dist_local:
+  static_volume_local:
+  media_volume_local:

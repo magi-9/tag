@@ -95,7 +95,13 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
-    host: true
+    host: true,
+    allowedHosts: true,
+    hmr: {
+      host: 'tag.tomag.xyz',
+      protocol: 'wss',
+      clientPort: 443
+    }
   },
   build: {
     outDir: 'dist',
