@@ -6,7 +6,6 @@ from rest_framework import status
 from datetime import timedelta
 from .models import GameSettings, Tag, Achievement, PlayerStats
 from .game_engine import GameEngine
-from users.models import UserProfile
 
 User = get_user_model()
 
@@ -58,17 +57,17 @@ class GameEngineTests(TestCase):
         self.user1 = User.objects.create_user(
             username='player1',
             email='p1@test.com',
-            password='pass123'
+            password='pass123', is_approved=True
         )
         self.user2 = User.objects.create_user(
             username='player2',
             email='p2@test.com',
-            password='pass123'
+            password='pass123', is_approved=True
         )
         self.user3 = User.objects.create_user(
             username='player3',
             email='p3@test.com',
-            password='pass123'
+            password='pass123', is_approved=True
         )
         
         # Set initial tag holder
@@ -82,6 +81,8 @@ class GameEngineTests(TestCase):
         self.assertEqual(holder, self.user1)
 
     def test_process_new_tag(self):
+        self.settings.current_tag_holder = self.user1
+        self.settings.save()
         """Test creating a new tag"""
         initial_count = Tag.objects.count()
         
@@ -97,10 +98,12 @@ class GameEngineTests(TestCase):
         self.assertEqual(tag.tagged, self.user2)
 
     def test_calculate_leaderboard(self):
+        self.settings.current_tag_holder = self.user1
+        self.settings.save()
         """Test leaderboard calculation"""
         # Create some tags
-        GameEngine.process_new_tag(self.user1, self.user2)
-        GameEngine.process_new_tag(self.user2, self.user3)
+        GameEngine.process_new_tag(self.user1, self.user2); self.settings.current_tag_holder = self.user2; self.settings.save()
+        GameEngine.process_new_tag(self.user2, self.user3); self.settings.current_tag_holder = self.user3; self.settings.save()
         
         leaderboard = GameEngine.calculate_leaderboard()
         self.assertGreater(len(leaderboard), 0)
@@ -113,12 +116,12 @@ class TagViewSetTests(TestCase):
         self.user1 = User.objects.create_user(
             username='player1',
             email='p1@test.com',
-            password='pass123'
+            password='pass123', is_approved=True
         )
         self.user2 = User.objects.create_user(
             username='player2',
             email='p2@test.com',
-            password='pass123'
+            password='pass123', is_approved=True
         )
         
         self.settings = GameSettings.get_settings()
@@ -159,6 +162,7 @@ class TagViewSetTests(TestCase):
 
     def test_current_holder_endpoint(self):
         """Test current_holder endpoint"""
+        self.client.force_authenticate(user=self.user1)
         response = self.client.get('/api/game/tags/current_holder/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(response.data.get('user'))
@@ -171,12 +175,12 @@ class AchievementTests(TestCase):
         self.user1 = User.objects.create_user(
             username='player1',
             email='p1@test.com',
-            password='pass123'
+            password='pass123', is_approved=True
         )
         self.user2 = User.objects.create_user(
             username='player2',
             email='p2@test.com',
-            password='pass123'
+            password='pass123', is_approved=True
         )
         
         self.settings = GameSettings.get_settings()
@@ -184,9 +188,11 @@ class AchievementTests(TestCase):
         self.settings.save()
 
     def test_calculate_achievements(self):
+        self.settings.current_tag_holder = self.user1
+        self.settings.save()
         """Test automatic achievement calculation"""
         # Create some tags to generate data
-        GameEngine.process_new_tag(self.user1, self.user2)
+        GameEngine.process_new_tag(self.user1, self.user2); self.settings.current_tag_holder = self.user2; self.settings.save()
         GameEngine.calculate_achievements()
         
         # Should have achievements
@@ -194,8 +200,10 @@ class AchievementTests(TestCase):
         self.assertGreater(achievements.count(), 0)
 
     def test_achievement_types(self):
+        self.settings.current_tag_holder = self.user1
+        self.settings.save()
         """Test that achievements have proper types"""
-        GameEngine.process_new_tag(self.user1, self.user2)
+        GameEngine.process_new_tag(self.user1, self.user2); self.settings.current_tag_holder = self.user2; self.settings.save()
         GameEngine.calculate_achievements()
         
         achievements = Achievement.objects.all()
