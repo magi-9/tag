@@ -52,19 +52,39 @@ api.interceptors.response.use(
         // Refresh failed, logout user
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
+        // We don't want to clear EVERYTHING if they were a spectator? 
+        // But if they reached this, they were authenticated.
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
 
-    // Show error toast
-    const errorMessage = error.response?.data?.detail || 
-                        error.response?.data?.error || 
-                        error.message || 
-                        'Nastala chyba';
-    toast.error(errorMessage);
+    // Extract error message
+    let errorMessage = 'Nastala chyba';
+    if (error.response?.data) {
+      if (typeof error.response.data === 'string') {
+        errorMessage = error.response.data;
+      } else if (error.response.data.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.response.data.error) {
+        errorMessage = error.response.data.error;
+      } else if (typeof error.response.data === 'object') {
+        // Handle field validation errors from Django (e.g. { "email": ["error"] })
+        const errors = Object.entries(error.response.data)
+          .map(([key, value]) => {
+            const field = key === 'non_field_errors' ? '' : `${key}: `;
+            const msgs = Array.isArray(value) ? value.join(' ') : value;
+            return `${field}${msgs}`;
+          });
+        if (errors.length > 0) {
+          errorMessage = errors.join('\n');
+        }
+      }
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
 
+    toast.error(errorMessage);
     return Promise.reject(error);
   }
 );
@@ -75,6 +95,7 @@ export const authAPI = {
   register: (data) => api.post('/users/register/', data),
   getProfile: () => api.get('/users/me/'),
   updateProfile: (data) => api.put('/users/update_profile/', data),
+  changePassword: (data) => api.post('/users/change_password/', data),
   subscribePush: (subscription) => api.post('/users/subscribe_push/', subscription)
 };
 
@@ -82,13 +103,13 @@ export const authAPI = {
 export const gameAPI = {
   getSettings: () => api.get('/game/settings/current/'),
   updateSettings: (id, data) => api.put(`/game/settings/${id}/`, data),
-  
+
   getTags: (params) => api.get('/game/tags/', { params }),
   createTag: (data) => api.post('/game/tags/create_tag/', data),
   getCurrentHolder: () => api.get('/game/tags/current_holder/'),
-  
+
   getLeaderboard: () => api.get('/game/leaderboard/'),
-  
+
   getAchievements: (params) => api.get('/game/achievements/', { params }),
   recalculateAchievements: () => api.post('/game/achievements/recalculate/')
 };
@@ -99,7 +120,9 @@ export const userAPI = {
   approveUser: (id) => api.post(`/users/${id}/approve/`),
   revokeApproval: (id) => api.post(`/users/${id}/revoke_approval/`),
   getPendingApprovals: () => api.get('/users/pending_approvals/'),
-  getLeaderboard: () => api.get('/users/leaderboard/')
+  getLeaderboard: () => api.get('/users/leaderboard/'),
+  updateUser: (id, data) => api.patch(`/users/${id}/`, data),
+  deleteUser: (id) => api.delete(`/users/${id}/`)
 };
 
 // Notifications API

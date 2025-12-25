@@ -2,10 +2,15 @@ import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, isSpectator, user } = useAuthStore();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isSpectator) {
     return <Navigate to="/login" />;
+  }
+
+  // Spectators skip approval check
+  if (isSpectator) {
+    return children;
   }
 
   // Check if user is approved
@@ -16,7 +21,7 @@ export default function ProtectedRoute({ children }) {
           <div className="text-6xl mb-4">⏳</div>
           <h1 className="text-2xl font-bold mb-2">Čaká sa na schválenie</h1>
           <p className="text-gray-600 mb-4">
-            Tvoja registrácia čaká na schválenie administrátorom. 
+            Tvoja registrácia čaká na schválenie administrátorom.
             Dostaneš notifikáciu keď ťa admin schváli a budeš môcť začať hrať.
           </p>
           <button

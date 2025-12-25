@@ -37,14 +37,21 @@ export default function Countdown({ targetDate }) {
     return () => clearInterval(timer);
   }, [targetDate]);
 
+  const labels = {
+    days: 'Dní',
+    hours: 'Hod',
+    minutes: 'Min',
+    seconds: 'Sek'
+  };
+
   return (
-    <div className="flex justify-center gap-4">
+    <div className="flex justify-center gap-3">
       {Object.entries(timeLeft).map(([unit, value]) => (
         <div key={unit} className="text-center">
-          <div className="bg-white/20 rounded-lg px-4 py-2 min-w-[60px]">
-            <p className="text-3xl font-bold">{value}</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl px-3 py-3 min-w-[64px] border border-white/10 shadow-lg">
+            <p className="text-2xl font-black leading-none">{value.toString().padStart(2, '0')}</p>
           </div>
-          <p className="text-sm mt-1 capitalize">{unit}</p>
+          <p className="text-[10px] mt-1.5 font-black uppercase tracking-widest opacity-60">{labels[unit]}</p>
         </div>
       ))}
     </div>

@@ -48,6 +48,7 @@ fi
 echo "🔨 Building and starting services on server..."
 ssh $TARGET "cd $REMOTE_PATH && \
     docker-compose -f docker-compose-local-prod.yml down && \
+    (docker volume rm tag_frontend_dist_local 2>/dev/null || true) && \
     docker-compose -f docker-compose-local-prod.yml up -d --build"
 
 echo ""

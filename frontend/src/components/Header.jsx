@@ -5,7 +5,7 @@ import { notificationsAPI } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 
 export default function Header() {
-  const { user } = useAuthStore();
+  const { user, isSpectator } = useAuthStore();
   const navigate = useNavigate();
 
   const { data: unreadCount } = useQuery({
@@ -14,6 +14,7 @@ export default function Header() {
       const response = await notificationsAPI.getUnreadCount();
       return response.data.count;
     },
+    enabled: !!user && !isSpectator,
     refetchInterval: 30000 // Refetch every 30 seconds
   });
 
@@ -23,21 +24,31 @@ export default function Header() {
         <div>
           <h1 className="text-xl font-bold">Tag Game</h1>
           <p className="text-sm text-gray-300">
-            {user?.full_name || user?.username}
+            {isSpectator ? 'Divák (Hosť)' : (user?.full_name || user?.username)}
           </p>
         </div>
-        
-        <button
-          onClick={() => navigate('/notifications')}
-          className="relative p-2 hover:bg-primary-light rounded-lg transition-colors"
-        >
-          <Bell size={24} />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-highlight text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </button>
+
+        {!isSpectator && (
+          <button
+            onClick={() => navigate('/notifications')}
+            className="relative p-2 hover:bg-primary-light rounded-lg transition-colors"
+          >
+            <Bell size={24} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-highlight text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+        )}
+        {isSpectator && (
+          <button
+            onClick={() => useAuthStore.getState().logout()}
+            className="btn btn-ghost text-xs bg-white/10 hover:bg-white/20 text-white border-0"
+          >
+            Odhlásiť sa
+          </button>
+        )}
       </div>
     </header>
   );

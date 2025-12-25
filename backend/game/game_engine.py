@@ -26,7 +26,7 @@ class GameEngine:
     def calculate_leaderboard():
         """Calculate current leaderboard with live data"""
         settings = GameSettings.get_settings()
-        users = User.objects.filter(is_approved=True)
+        users = User.objects.filter(is_approved=True, is_participating=True)
         leaderboard = []
         current_holder = GameEngine.get_current_tag_holder()
         
@@ -119,9 +119,14 @@ class GameEngine:
         if not settings.is_game_active:
             raise ValueError("Game is not currently active")
         
-        # Verify both users are approved
+        # Verify both users are approved and participating
         if not tagger.is_approved or not tagged.is_approved:
             raise ValueError("Both users must be approved to play")
+            
+        if not tagger.is_participating:
+            raise ValueError(f"User {tagger.username} is not participating in the game")
+        if not tagged.is_participating:
+            raise ValueError(f"User {tagged.username} is not participating in the game")
         
         # Verify tagged player is the current holder
         current_holder = GameEngine.get_current_tag_holder()

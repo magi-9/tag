@@ -11,7 +11,8 @@ class User(AbstractUser):
     phone = models.CharField(max_length=20, blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     
-    # Game related fields
+    # User status
+    is_participating = models.BooleanField(default=True, help_text='Whether the user is actively participating in the game')
     is_approved = models.BooleanField(default=False, help_text='Admin must approve user to play')
     approved_at = models.DateTimeField(blank=True, null=True)
     approved_by = models.ForeignKey(

@@ -10,25 +10,40 @@ export const useAuthStore = create(
       access_token: null,
       refresh_token: null,
       isAuthenticated: false,
+      isSpectator: false,
       isLoading: false,
+
+      enterSpectatorMode: () => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        set({
+          user: null,
+          access_token: null,
+          refresh_token: null,
+          isAuthenticated: false,
+          isSpectator: true
+        });
+        toast.success('Vstúpili ste ako divák');
+      },
 
       login: async (credentials) => {
         set({ isLoading: true });
         try {
           const response = await authAPI.login(credentials);
           const { access, refresh, user } = response.data;
-          
+
           localStorage.setItem('access_token', access);
           localStorage.setItem('refresh_token', refresh);
-          
+
           set({
             user,
             access_token: access,
             refresh_token: refresh,
             isAuthenticated: true,
+            isSpectator: false,
             isLoading: false
           });
-          
+
           toast.success(`Vitaj, ${user.full_name || user.username}!`);
           return true;
         } catch (error) {
@@ -57,7 +72,8 @@ export const useAuthStore = create(
           user: null,
           access_token: null,
           refresh_token: null,
-          isAuthenticated: false
+          isAuthenticated: false,
+          isSpectator: false
         });
         toast.success('Odhlásený');
       },
@@ -88,7 +104,8 @@ export const useAuthStore = create(
         user: state.user,
         access_token: state.access_token,
         refresh_token: state.refresh_token,
-        isAuthenticated: state.isAuthenticated
+        isAuthenticated: state.isAuthenticated,
+        isSpectator: state.isSpectator
       })
     }
   )

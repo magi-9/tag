@@ -6,7 +6,8 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from .serializers import (
     UserSerializer, UserRegistrationSerializer,
-    CustomTokenObtainPairSerializer, PushSubscriptionSerializer
+    CustomTokenObtainPairSerializer, PushSubscriptionSerializer,
+    ChangePasswordSerializer
 )
 
 User = get_user_model()
@@ -98,3 +99,15 @@ class UserViewSet(viewsets.ModelViewSet):
         users = User.objects.filter(is_approved=True).order_by('-total_points')
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def change_password(self, request):
+        """Change password for current user"""
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        
+        user = request.user
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        
+        return Response({'message': 'Heslo bolo úspešne zmenené.'}, status=status.HTTP_200_OK)

@@ -46,12 +46,27 @@ export default function HomePage() {
     <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Game Status */}
       {settings && (
-        <div className="card bg-gradient-to-br from-accent to-accent-dark text-white">
+        <div className="card bg-gradient-to-br from-accent to-accent-dark text-white p-8">
           <div className="text-center">
-            <h2 className="text-xl font-bold mb-2">Koniec hry</h2>
-            <Countdown targetDate={settings.game_end_date} />
-            {!settings.is_game_active && (
-              <p className="mt-4 text-white/90">Hra momentálne nie je aktívna</p>
+            {new Date(settings.game_start_date) > new Date() ? (
+              <>
+                <h2 className="text-lg font-black mb-4 uppercase tracking-widest opacity-80">Do začiatku hry zostáva</h2>
+                <Countdown targetDate={settings.game_start_date} />
+                <p className="mt-4 text-xs font-bold bg-white/10 inline-block px-4 py-1 rounded-full">
+                  Hra začína {new Date(settings.game_start_date).toLocaleDateString('sk-SK')}
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-black mb-4 uppercase tracking-widest opacity-80">Do konca hry zostáva</h2>
+                <Countdown targetDate={settings.game_end_date} />
+                {!settings.is_game_active && (
+                  <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-2xl">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    <span className="text-xs font-bold uppercase tracking-wider">Hra je momentálne pozastavená</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

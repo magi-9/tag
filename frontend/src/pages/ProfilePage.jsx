@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { User, Mail, Phone, LogOut, Bell } from 'lucide-react';
+import { User, Mail, Phone, LogOut, Bell, Key } from 'lucide-react';
 import { subscribeToPush, requestNotificationPermission } from '../utils/pwa';
 import { authAPI } from '../utils/api';
 import toast from 'react-hot-toast';
@@ -9,7 +10,7 @@ export default function ProfilePage() {
   const { user, logout, updateProfile } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(
-    Notification.permission === 'granted'
+    typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'granted'
   );
   const [formData, setFormData] = useState({
     first_name: user?.first_name || '',
@@ -187,14 +188,39 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* Logout Button */}
-      <button
-        onClick={logout}
-        className="btn btn-secondary w-full flex items-center justify-center gap-2"
-      >
-        <LogOut size={20} />
-        Odhlásiť sa
-      </button>
+      {/* Settings & Logout */}
+      <div className="space-y-4 mt-8 pb-10">
+        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest px-1">Nastavenia účtu</h3>
+
+        <div className="grid gap-3">
+          <Link
+            to="/profile/change-password"
+            className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-accent/30 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
+                <Key size={20} />
+              </div>
+              <span className="font-bold text-gray-700">Zmeniť heslo</span>
+            </div>
+            <div className="text-gray-300 group-hover:text-accent transition-colors">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+            </div>
+          </Link>
+
+          <button
+            onClick={logout}
+            className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-error/30 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-error/10 rounded-xl flex items-center justify-center text-error group-hover:scale-110 transition-transform">
+                <LogOut size={20} />
+              </div>
+              <span className="font-bold text-gray-700">Odhlásiť sa</span>
+            </div>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

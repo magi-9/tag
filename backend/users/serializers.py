@@ -13,6 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 'full_name',
             'phone', 'avatar', 'is_approved', 'approved_at', 'is_staff',
+            'is_participating',
             'total_tags_given', 'total_tags_received', 'total_points',
             'total_time_held', 'created_at'
         ]
@@ -62,3 +63,20 @@ class PushSubscriptionSerializer(serializers.Serializer):
         user.push_subscription = self.validated_data
         user.save()
         return user
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, min_length=8)
+    new_password_confirm = serializers.CharField(required=True, min_length=8)
+
+    def validate(self, data):
+        if data['new_password'] != data['new_password_confirm']:
+            raise serializers.ValidationError({"new_password_confirm": "Nové heslá sa nezhodujú."})
+        return data
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Staré heslo je nesprávne.")
+        return value

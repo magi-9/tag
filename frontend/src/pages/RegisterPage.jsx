@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { UserPlus } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.password_confirm) {
       toast.error('Heslá sa nezhodujú');
       return;
@@ -39,13 +40,16 @@ export default function RegisterPage() {
           <p className="text-sm text-gray-600">Vytvor si účet a začni hrať</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form id="register-form" onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
               Používateľské meno *
             </label>
             <input
+              id="username"
+              name="username"
               type="text"
+              autoComplete="username"
               className="input"
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
@@ -54,11 +58,14 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email *
             </label>
             <input
+              id="email"
+              name="email"
               type="email"
+              autoComplete="email"
               className="input"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -68,22 +75,28 @@ export default function RegisterPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
                 Krstné meno
               </label>
               <input
+                id="first_name"
+                name="first_name"
                 type="text"
+                autoComplete="given-name"
                 className="input"
                 value={formData.first_name}
                 onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
                 Priezvisko
               </label>
               <input
+                id="last_name"
+                name="last_name"
                 type="text"
+                autoComplete="family-name"
                 className="input"
                 value={formData.last_name}
                 onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
@@ -92,11 +105,14 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
               Telefón
             </label>
             <input
+              id="phone"
+              name="phone"
               type="tel"
+              autoComplete="tel"
               className="input"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -104,11 +120,14 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Heslo *
             </label>
             <input
+              id="password"
+              name="password"
               type="password"
+              autoComplete="new-password"
               className="input"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -118,11 +137,14 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password_confirm" className="block text-sm font-medium text-gray-700 mb-1">
               Potvrdenie hesla *
             </label>
             <input
+              id="password_confirm"
+              name="password_confirm"
               type="password"
+              autoComplete="new-password"
               className="input"
               value={formData.password_confirm}
               onChange={(e) => setFormData({ ...formData, password_confirm: e.target.value })}
