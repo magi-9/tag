@@ -63,7 +63,12 @@ api.interceptors.response.use(
     let errorMessage = 'Nastala chyba';
     if (error.response?.data) {
       if (typeof error.response.data === 'string') {
-        errorMessage = error.response.data;
+        // Check if response is HTML (likely Cloudflare or server error page)
+        if (error.response.data.trim().startsWith('<')) {
+          errorMessage = 'Nepodarilo sa pripojiť k serveru. Skúste to prosím neskôr.';
+        } else {
+          errorMessage = error.response.data;
+        }
       } else if (error.response.data.detail) {
         errorMessage = error.response.data.detail;
       } else if (error.response.data.error) {
