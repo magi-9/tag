@@ -52,6 +52,8 @@ api.interceptors.response.use(
         // Refresh failed, logout user
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
+        localStorage.removeItem('auth-storage'); // Clear persisted auth state to prevent reload loop
+
         // We don't want to clear EVERYTHING if they were a spectator? 
         // But if they reached this, they were authenticated.
         window.location.href = '/login';
