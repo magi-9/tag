@@ -128,9 +128,9 @@ class GameEngine:
         if not tagged.is_participating:
             raise ValueError(f"User {tagged.username} is not participating in the game")
         
-        # Verify tagged player is the current holder
+        # Verify tagger is the current holder
         current_holder = GameEngine.get_current_tag_holder()
-        if current_holder and current_holder != tagged:
+        if current_holder and current_holder != tagger:
             raise ValueError(f"Cannot tag {tagged.username}, current holder is {current_holder.username}")
         
         # Get previous tag to calculate time held
