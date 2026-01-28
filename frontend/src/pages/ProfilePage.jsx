@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { User, Mail, Phone, LogOut, Bell, Key } from 'lucide-react';
 import { subscribeToPush, requestNotificationPermission } from '../utils/pwa';

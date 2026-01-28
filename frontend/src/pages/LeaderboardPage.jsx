@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { gameAPI } from '../utils/api';
 import { Trophy, TrendingUp, Clock, Target } from 'lucide-react';
-import { formatDuration, intervalToDuration } from 'date-fns';
 import clsx from 'clsx';
 
 export default function LeaderboardPage() {
