@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { gameAPI } from '../utils/api';
-import { Award, Trophy, Zap, Clock, Target } from 'lucide-react';
+import { Award } from 'lucide-react';
 
 const ACHIEVEMENT_ICONS = {
   worst_player: '💩',

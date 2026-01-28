@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { gameAPI } from '../utils/api';
 import { Clock, Target, TrendingUp } from 'lucide-react';

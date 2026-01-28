@@ -39,8 +39,9 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\./i,
-            handler: 'NetworkFirst',
+            // Match /api/ requests (both relative and absolute if on same domain)
+            urlPattern: /\/api\//,
+            handler: 'NetworkOnly',
             options: {
               cacheName: 'api-cache',
               expiration: {

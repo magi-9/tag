@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { notificationsAPI } from '../utils/api';
-import { Bell, Check, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { sk } from 'date-fns/locale';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

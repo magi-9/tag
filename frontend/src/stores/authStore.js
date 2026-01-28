@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 export const useAuthStore = create(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       access_token: null,
       refresh_token: null,
@@ -55,7 +55,7 @@ export const useAuthStore = create(
       register: async (data) => {
         set({ isLoading: true });
         try {
-          const response = await authAPI.register(data);
+          await authAPI.register(data);
           set({ isLoading: false });
           toast.success('Registrácia úspešná! Čakaj na schválenie admina.');
           return true;

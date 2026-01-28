@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { gameAPI } from '../utils/api';
 import { Trophy, TrendingUp, Clock, Target } from 'lucide-react';
-import { formatDuration, intervalToDuration } from 'date-fns';
 import clsx from 'clsx';
 
 export default function LeaderboardPage() {
-  const { data: leaderboard, isLoading } = useQuery({
+  const { data: leaderboard, isLoading, isError, refetch } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
       const response = await gameAPI.getLeaderboard();
@@ -31,6 +30,26 @@ export default function LeaderboardPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-12 h-12 spinner" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="container mx-auto px-4 py-6 text-center">
+        <div className="mb-6">
+          <Trophy className="mx-auto text-accent mb-2" size={48} />
+          <h1 className="text-3xl font-bold text-primary">Rebríček</h1>
+        </div>
+        <div className="p-8 bg-red-50 rounded-lg">
+          <p className="text-red-500 mb-4">Nepodarilo sa načítať rebríček.</p>
+          <button
+            onClick={() => refetch()}
+            className="px-6 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity"
+          >
+            Skúsiť znova
+          </button>
+        </div>
       </div>
     );
   }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { formatDate } from '../utils/dateUtils';
 import api from '../utils/api';
-import { BookOpen, Calendar, Trophy, ListChecks, HelpCircle, Star } from 'lucide-react';
+import { BookOpen, Calendar, Trophy, HelpCircle, Star } from 'lucide-react';
 
 export default function RulesPage() {
   const [rules, setRules] = useState(null);
@@ -53,7 +53,7 @@ export default function RulesPage() {
           </div>
           <h1 className="text-4xl font-black text-white mb-3 tracking-tight">Pravidlá Hry</h1>
           <p className="text-white/80 font-bold leading-relaxed max-w-sm mx-auto italic text-sm">
-            "Vyhráva ten, kto je najviac crazy."
+            &quot;Vyhráva ten, kto je najviac crazy.&quot;
           </p>
         </div>
       </div>
@@ -164,7 +164,7 @@ export default function RulesPage() {
           </div>
           <div className="space-y-6">
             {[
-              { id: 1, title: 'Kto drží tag', text: 'Iba hráč, ktorý je momentálne "ulovený" (drží tag), môže natagovať ďalšieho.' },
+              { id: 1, title: 'Kto drží tag', text: 'Iba hráč, ktorý je momentálne &quot;ulovený&quot; (drží tag), môže natagovať ďalšieho.' },
               { id: 2, title: 'Odovzdanie tagu', text: 'Keď niekoho nataguješ (odovzdáš mu tag), on ho preberá a ty si voľný.' },
               { id: 3, title: 'Zber bodov', text: 'Body získavaš podľa aktuálneho poradia hráča, ktorého práve taguješ.' },
               { id: 4, title: 'Časový limit', text: 'Čím dlhšie tag držíš, tým viac bodov strácaš. Rýchlosť je tvoj kamoš.' },

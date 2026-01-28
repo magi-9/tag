@@ -15,7 +15,7 @@ export default function Layout() {
       // Disconnect on unmount
       disconnectWebSocket();
     };
-  }, []);
+  }, [connectWebSocket, disconnectWebSocket]);
 
   return (
     <div className="flex flex-col h-full">

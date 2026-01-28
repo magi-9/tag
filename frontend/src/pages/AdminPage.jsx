@@ -1,4 +1,4 @@
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Settings, Users, Bell, Key, Gamepad2 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import clsx from 'clsx';
