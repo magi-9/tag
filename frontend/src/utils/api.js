@@ -136,7 +136,8 @@ export const userAPI = {
   getPendingApprovals: () => api.get('/users/pending_approvals/'),
   getLeaderboard: () => api.get('/users/leaderboard/'),
   updateUser: (id, data) => api.patch(`/users/${id}/`, data),
-  deleteUser: (id) => api.delete(`/users/${id}/`)
+  deleteUser: (id) => api.delete(`/users/${id}/`),
+  adminResetPassword: (id, password) => api.post(`/users/${id}/admin_reset_password/`, { new_password: password })
 };
 
 // Notifications API

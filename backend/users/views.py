@@ -7,7 +7,7 @@ from django.utils import timezone
 from .serializers import (
     UserSerializer, UserRegistrationSerializer,
     CustomTokenObtainPairSerializer, PushSubscriptionSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer, AdminPasswordResetSerializer
 )
 
 User = get_user_model()
@@ -24,6 +24,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['create', 'register']:
             return [permissions.AllowAny()]
+        if self.action in ['approve', 'revoke_approval', 'pending_approvals', 'admin_reset_password']:
+            return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
     
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
@@ -111,3 +113,15 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
         
         return Response({'message': 'Heslo bolo úspešne zmenené.'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def admin_reset_password(self, request, pk=None):
+        """Admin resets password for a user"""
+        user = self.get_object()
+        serializer = AdminPasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+
+        return Response({'message': f'Heslo pre používateľa {user.username} bolo úspešne zmenené.'}, status=status.HTTP_200_OK)
