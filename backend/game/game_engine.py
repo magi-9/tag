@@ -37,19 +37,16 @@ class GameEngine:
             total_points = 0
             total_time_held = timedelta()
             
-            # Calculate points from tagging others
+            # Calculate points from tagging others (and penalties for holding before tagging)
             tags_given = Tag.objects.filter(tagger=user, verified=True)
             for tag in tags_given:
                 total_points += tag.points_awarded
-            
-            # Calculate penalties from being caught
-            for tag in tags_received:
-                total_points -= tag.time_penalty
+                total_points -= tag.time_penalty  # Penalty for the time held before this tag
             
             # Add bonus for untagged days
             total_points += GameEngine.calculate_untagged_bonus(user, settings)
             
-            # Calculate total time held
+            # Calculate total time held and current pending penalty
             for i, tag in enumerate(tags_received):
                 if i < len(tags_received) - 1:
                     next_tag = tags_received[i + 1]
@@ -58,11 +55,25 @@ class GameEngine:
                     # If this is the last tag and user is current holder
                     if user == current_holder:
                         time_diff = timezone.now() - tag.tagged_at
+                        # Calculate pending penalty
+                        hours_held = time_diff.total_seconds() / 3600
+                        pending_penalty = int(hours_held) * settings.time_penalty_per_hour
+                        total_points -= pending_penalty
                     else:
                         time_diff = timedelta()
                 
                 total_time_held += time_diff
             
+            # Special case: If user is current holder but has no received tags (Initial Holder)
+            if user == current_holder and not tags_received.exists():
+                if settings.tag_holder_since:
+                    time_diff = timezone.now() - settings.tag_holder_since
+                    total_time_held += time_diff
+                    # Pending penalty
+                    hours_held = time_diff.total_seconds() / 3600
+                    pending_penalty = int(hours_held) * settings.time_penalty_per_hour
+                    total_points -= pending_penalty
+
             leaderboard.append({
                 'user': user,
                 'points': total_points,
@@ -133,14 +144,16 @@ class GameEngine:
         if current_holder and current_holder != tagger:
             raise ValueError(f"Cannot tag {tagged.username}, current holder is {current_holder.username}")
         
-        # Get previous tag to calculate time held
-        previous_tag = Tag.objects.filter(tagged=tagged, verified=True).order_by('-tagged_at').first()
-        
-        if previous_tag:
-            time_held = timezone.now() - previous_tag.tagged_at
+        # Calculate time held by tagger
+        if settings.tag_holder_since:
+            time_held = timezone.now() - settings.tag_holder_since
         else:
-            # First tag of the game or this player's first time holding
-            time_held = timedelta()
+            # Fallback if settings.tag_holder_since is missing (should not happen if configured correctly)
+            last_received_tag = Tag.objects.filter(tagged=tagger, verified=True).order_by('-tagged_at').first()
+            if last_received_tag:
+                time_held = timezone.now() - last_received_tag.tagged_at
+            else:
+                time_held = timedelta()
         
         # Calculate penalty for time held
         hours_held = time_held.total_seconds() / 3600
@@ -174,15 +187,21 @@ class GameEngine:
             verified=True
         )
         
+        # Update Game Settings with new holder
+        settings.current_tag_holder = tagged
+        # tag_holder_since will be updated automatically by GameSettings.save()
+        settings.save()
+
         # Update user statistics
         tagger.total_tags_given = F('total_tags_given') + 1
-        tagger.total_points = F('total_points') + points_awarded
+        tagger.total_points = F('total_points') + points_awarded - time_penalty
+        tagger.total_time_held = F('total_time_held') + time_held
         tagger.save()
         tagger.refresh_from_db()
         
         tagged.total_tags_received = F('total_tags_received') + 1
-        tagged.total_points = F('total_points') - time_penalty
-        tagged.total_time_held = F('total_time_held') + time_held
+        # No penalty for tagged user (they just got it)
+        # No time held for tagged user (they just got it)
         tagged.save()
         tagged.refresh_from_db()
 
