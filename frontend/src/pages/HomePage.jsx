@@ -155,9 +155,9 @@ export default function HomePage() {
                 </div>
                 {tag.photo && (
                   <div className="mt-2">
-                    <img 
-                      src={tag.photo} 
-                      alt="Tag photo" 
+                    <img
+                      src={tag.photo}
+                      alt="Tag photo"
                       className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => window.open(tag.photo, '_blank')}
                     />

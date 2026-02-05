@@ -187,7 +187,7 @@ export default function TagPage() {
                   📁 Vybrať z galérie
                 </div>
               </label>
-              
+
               {/* Take photo with camera */}
               <label className="flex-1">
                 <input
@@ -208,7 +208,7 @@ export default function TagPage() {
                 ✓ Fotka: {photo.name} ({(photo.size / 1024).toFixed(1)} KB)
               </div>
             )}
-              className="input"
+            className="input"
             />
             {photo && (
               <p className="text-sm text-green-600 mt-2">

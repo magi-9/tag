@@ -52,6 +52,16 @@ def send_tag_notification(tag_id):
         
         # Send push notifications
         for user in users:
+            # Check if notification already exists to prevent duplicates
+            existing = Notification.objects.filter(
+                user=user,
+                notification_type='tag',
+                data__tag_id=tag.id
+            ).exists()
+            
+            if existing:
+                continue  # Skip if already sent
+            
             notification = Notification.objects.create(
                 user=user,
                 notification_type='tag',
