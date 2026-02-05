@@ -46,33 +46,31 @@ class GameEngine:
             # Add bonus for untagged days
             total_points += GameEngine.calculate_untagged_bonus(user, settings)
             
-            # Calculate total time held and current pending penalty
-            for i, tag in enumerate(tags_received):
-                if i < len(tags_received) - 1:
-                    next_tag = tags_received[i + 1]
-                    time_diff = next_tag.tagged_at - tag.tagged_at
-                else:
-                    # If this is the last tag and user is current holder
-                    if user == current_holder:
-                        time_diff = timezone.now() - tag.tagged_at
-                        # Calculate pending penalty
-                        hours_held = time_diff.total_seconds() / 3600
-                        pending_penalty = int(hours_held) * settings.time_penalty_per_hour
-                        total_points -= pending_penalty
-                    else:
-                        time_diff = timedelta()
-                
-                total_time_held += time_diff
-            
-            # Special case: If user is current holder but has no received tags (Initial Holder)
-            if user == current_holder and not tags_received.exists():
+            # Calculate total time held (sum of time_held from tags they PASSED)
+            # We use tags_given because 'time_held' is stored on the tag event when it is passed
+            held_tags = Tag.objects.filter(tagger=user, verified=True)
+            for tag in held_tags:
+                total_time_held += tag.time_held
+
+            # Calculate pending time and penalty if they are the current holder
+            if user == current_holder:
+                pending_time = timedelta()
+
                 if settings.tag_holder_since:
-                    time_diff = timezone.now() - settings.tag_holder_since
-                    total_time_held += time_diff
-                    # Pending penalty
-                    hours_held = time_diff.total_seconds() / 3600
-                    pending_penalty = int(hours_held) * settings.time_penalty_per_hour
-                    total_points -= pending_penalty
+                    pending_time = timezone.now() - settings.tag_holder_since
+                else:
+                    # Fallback for running games or if state is desynced:
+                    # Calculate from their last received tag
+                    last_received = tags_received.last()
+                    if last_received:
+                        pending_time = timezone.now() - last_received.tagged_at
+                
+                total_time_held += pending_time
+
+                # Apply pending penalty
+                hours_held = pending_time.total_seconds() / 3600
+                pending_penalty = int(hours_held) * settings.time_penalty_per_hour
+                total_points -= pending_penalty
 
             leaderboard.append({
                 'user': user,
