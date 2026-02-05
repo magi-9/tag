@@ -105,8 +105,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: https://tag.tommag.xyz/api
-        VITE_WS_URL: wss://tag.tommag.xyz/ws/game/
+        VITE_API_URL: /api
+        VITE_WS_URL: wss://tag.tomag.xyz/ws/game/
         VITE_VAPID_PUBLIC_KEY: ${VITE_VAPID_PUBLIC_KEY}
     ports:
       - "5050:80"

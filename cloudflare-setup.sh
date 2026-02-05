@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Cloudflare Firewall Rule Setup Helper
+# This script shows you the commands to setup Cloudflare firewall rules via CLI
+
+echo "=================================================="
+echo "Cloudflare Firewall Rules Setup"
+echo "=================================================="
+echo ""
+echo "OPTION 1: Allow API requests with X-Requested-With header"
+echo "This is the recommended approach as it's more secure."
+echo ""
+echo "Go to: Cloudflare Dashboard > Security > WAF > Firewall Rules"
+echo ""
+echo "Rule Name: Allow API XMLHttpRequest"
+echo "Expression:"
+echo '  (http.request.uri.path contains "/api/") and'
+echo '  (http.request.headers["x-requested-with"] eq "XMLHttpRequest")'
+echo "Action: Allow"
+echo ""
+echo "=================================================="
+echo ""
+echo "OPTION 2: Allow all API requests from your domain"
+echo "Simpler but less secure."
+echo ""
+echo "Rule Name: Allow Domain API"
+echo "Expression:"
+echo '  (http.host eq "tag.tomag.xyz") and'
+echo '  (http.request.uri.path contains "/api/")'
+echo "Action: Allow"
+echo ""
+echo "=================================================="
+echo ""
+echo "OPTION 3: Whitelist your origin"
+echo ""
+echo "Rule Name: Allow CORS Origin"
+echo "Expression:"
+echo '  (http.request.uri.path contains "/api/") and'
+echo '  (http.request.headers["origin"] eq "https://tag.tomag.xyz")'
+echo "Action: Allow"
+echo ""
+echo "=================================================="
+echo ""
+echo "Additional Cloudflare Settings:"
+echo ""
+echo "1. SSL/TLS: Set to 'Full (strict)'"
+echo "2. Security Level: Set to 'Medium' or 'Low'"
+echo "3. Bot Fight Mode: Disable (if enabled)"
+echo "4. Under Attack Mode: Disable (use only during actual DDoS)"
+echo ""
+echo "=================================================="
+echo ""
+echo "Test your API after setup:"
+echo ""
+echo "curl -H 'X-Requested-With: XMLHttpRequest' \\"
+echo "     -H 'Accept: application/json' \\"
+echo "     https://tag.tomag.xyz/api/game/tags/"
+echo ""
+echo "Should return JSON, not HTML challenge page."
+echo ""

@@ -45,7 +45,7 @@ export default function TagPage() {
       queryClient.invalidateQueries(['current-holder']);
       queryClient.invalidateQueries(['leaderboard']);
       queryClient.invalidateQueries(['recent-tags']);
-      
+
       // Reset form
       setSelectedUser('');
       setLocation('');
@@ -56,7 +56,7 @@ export default function TagPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!selectedUser) {
       toast.error('Vyber hráča');
       return;
@@ -91,11 +91,10 @@ export default function TagPage() {
 
       {/* Current Holder Info */}
       {currentHolder?.user && (
-        <div className={`card border-2 mb-6 ${
-          currentHolder.user.id === user?.id 
-            ? 'bg-accent/10 border-accent' 
-            : 'bg-error/10 border-error'
-        }`}>
+        <div className={`card border-2 mb-6 ${currentHolder.user.id === user?.id
+          ? 'bg-accent/10 border-accent'
+          : 'bg-error/10 border-error'
+          }`}>
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">Aktuálny držiteľ tagu:</p>
             <p className="text-2xl font-bold text-primary">
@@ -207,8 +206,8 @@ export default function TagPage() {
         <div className="card bg-error/10 border-2 border-error text-center py-8">
           <p className="text-xl font-bold text-error mb-2">⏸️ Nie si držiteľom tagu</p>
           <p className="text-gray-600 mb-4">
-            Momentálne môžeš len sledovať rebríček a čakať na svoju šancu. 
-            Keď ťa niekto natagy, stanete sa držiteľom tagu!
+            Momentálne môžeš len sledovať rebríček a čakať na svoju šancu.
+            Keď ťa niekto tagne, stanete sa držiteľom tagu!
           </p>
           <a href="/rules" className="btn btn-primary inline-block">
             📖 Čítaj Pravidlá
