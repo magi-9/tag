@@ -1,13 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userAPI } from '../../utils/api';
-import { Check, Users, Gamepad2, Shield, Trash2, UserX } from 'lucide-react';
+import { Check, Users, Gamepad2, Shield, Trash2, UserX, Key } from 'lucide-react';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import { useAuthStore } from '../../stores/authStore';
+import { useState } from 'react';
 
 export default function AdminUsers() {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
+  const [resetPasswordUser, setResetPasswordUser] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
 
   const { data: pendingUsers } = useQuery({
     queryKey: ['pending-users'],
@@ -60,6 +63,15 @@ export default function AdminUsers() {
     }
   });
 
+  const resetPasswordMutation = useMutation({
+    mutationFn: ({ userId, password }) => userAPI.adminResetPassword(userId, password),
+    onSuccess: () => {
+      toast.success('Heslo bolo úspešne zmenené');
+      setResetPasswordUser(null);
+      setNewPassword('');
+    }
+  });
+
   const handleDeleteUser = (user) => {
     if (user.id === currentUser.id) {
       toast.error('Nemôžete vymazať samého seba!');
@@ -69,6 +81,15 @@ export default function AdminUsers() {
     if (window.confirm(`Naozaj chcete natrvalo vymazať používateľa ${user.full_name || user.username}? Táto akcia je nevratná!`)) {
       deleteUserMutation.mutate(user.id);
     }
+  };
+
+  const handleResetPassword = (e) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast.error('Heslo musí mať aspoň 8 znakov');
+      return;
+    }
+    resetPasswordMutation.mutate({ userId: resetPasswordUser.id, password: newPassword });
   };
 
   return (
@@ -175,13 +196,25 @@ export default function AdminUsers() {
                 )}
 
                 {(!user.is_staff || user.id !== currentUser.id) && (
-                  <button
-                    onClick={() => handleDeleteUser(user)}
-                    className="p-3 bg-red-50 text-red-500 rounded-2xl border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm"
-                    title="Vymazať účet"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        setResetPasswordUser(user);
+                        setNewPassword('');
+                      }}
+                      className="p-3 bg-blue-50 text-blue-500 rounded-2xl border border-blue-100 hover:bg-blue-500 hover:text-white transition-all shadow-sm"
+                      title="Zmeniť heslo"
+                    >
+                      <Key size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteUser(user)}
+                      className="p-3 bg-red-50 text-red-500 rounded-2xl border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                      title="Vymazať účet"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </>
                 )}
 
                 {user.is_staff && user.id === currentUser.id && (
@@ -194,6 +227,45 @@ export default function AdminUsers() {
           ))}
         </div>
       </div>
+
+      {/* Reset Password Modal */}
+      {resetPasswordUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[2rem] p-6 w-full max-w-md shadow-2xl animate-fade-in">
+            <h3 className="text-xl font-black mb-4">Zmeniť heslo pre {resetPasswordUser.username}</h3>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Nové heslo</label>
+                <input
+                  type="text"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all font-mono"
+                  placeholder="Zadajte nové heslo..."
+                  autoFocus
+                />
+                <p className="text-xs text-gray-400 mt-1">Minimálne 8 znakov</p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setResetPasswordUser(null)}
+                  className="flex-1 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+                >
+                  Zrušiť
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-accent text-white rounded-xl font-bold hover:bg-accent-hover transition-colors shadow-lg shadow-accent/20"
+                >
+                  Uložiť heslo
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
