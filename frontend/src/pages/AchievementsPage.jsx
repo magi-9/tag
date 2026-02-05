@@ -62,9 +62,9 @@ export default function AchievementsPage() {
                 <p className="text-sm text-gray-600 mb-1">
                   {achievement.description}
                 </p>
-                {achievement.value && (
+                {(achievement.formatted_value || achievement.value) && (
                   <p className="text-accent font-bold">
-                    {achievement.value}
+                    {achievement.formatted_value || achievement.value}
                   </p>
                 )}
                 <p className="text-xs text-gray-500">

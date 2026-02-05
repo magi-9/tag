@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { gameAPI } from '../utils/api';
 import { Trophy, TrendingUp, Clock, Target } from 'lucide-react';
 import clsx from 'clsx';
+import { formatDuration, parsePythonTimedelta } from '../utils/dateUtils';
 
 export default function LeaderboardPage() {
   const { data: leaderboard, isLoading, isError, refetch } = useQuery({
@@ -15,15 +16,8 @@ export default function LeaderboardPage() {
 
   const formatTimeHeld = (duration) => {
     if (!duration) return '0s';
-    
-    // Parse ISO 8601 duration or timedelta
-    const match = duration.match(/(\d+) days?, (\d+):(\d+):(\d+)/);
-    if (match) {
-      const [, days, hours, minutes] = match;
-      return `${days}d ${hours}h ${minutes}m`;
-    }
-    
-    return duration;
+    const seconds = parsePythonTimedelta(duration);
+    return formatDuration(seconds);
   };
 
   if (isLoading) {

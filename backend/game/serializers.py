@@ -64,14 +64,56 @@ class CreateTagSerializer(serializers.Serializer):
 
 class AchievementSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.full_name', read_only=True)
+    formatted_value = serializers.SerializerMethodField()
     
     class Meta:
         model = Achievement
         fields = [
             'id', 'user', 'user_name', 'achievement_type',
-            'title', 'description', 'value', 'icon', 'awarded_at'
+            'title', 'description', 'value', 'formatted_value', 'icon', 'awarded_at'
         ]
         read_only_fields = ['id', 'awarded_at']
+    
+    def get_formatted_value(self, obj):
+        """Format value based on achievement type"""
+        if not obj.value:
+            return obj.value
+        
+        # For time-based achievements
+        if obj.achievement_type in ['fastest_player', 'slowest_player', 'fastest_catch', 'slowest_catch']:
+            # Try to parse as timedelta
+            try:
+                # Value is already a string like "1 day, 2:30:45"
+                parts = obj.value.split(', ')
+                if len(parts) == 2:
+                    days = int(parts[0].split(' ')[0])
+                    time_parts = parts[1].split(':')
+                    hours = int(time_parts[0])
+                    
+                    if days > 0:
+                        return f"{days}d {hours}h"
+                    elif hours > 0:
+                        minutes = int(time_parts[1])
+                        return f"{hours}h {minutes}m"
+                    else:
+                        minutes = int(time_parts[1])
+                        seconds = int(float(time_parts[2]))
+                        return f"{minutes}m {seconds}s"
+                elif len(parts) == 1:
+                    # No days
+                    time_parts = parts[0].split(':')
+                    hours = int(time_parts[0])
+                    minutes = int(time_parts[1])
+                    
+                    if hours > 0:
+                        return f"{hours}h {minutes}m"
+                    else:
+                        seconds = int(float(time_parts[2]))
+                        return f"{minutes}m {seconds}s"
+            except:
+                pass
+        
+        return obj.value
 
 
 class PlayerStatsSerializer(serializers.ModelSerializer):
