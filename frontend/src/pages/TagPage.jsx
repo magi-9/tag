@@ -173,11 +173,41 @@ export default function TagPage() {
               <Camera size={16} className="inline mr-1" />
               Fotka (voliteľná)
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handlePhotoChange}
+            <div className="flex gap-2">
+              {/* Upload from gallery */}
+              <label className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoChange}
+                  id="photo-upload"
+                />
+                <div className="btn btn-secondary w-full cursor-pointer text-center">
+                  📁 Vybrať z galérie
+                </div>
+              </label>
+              
+              {/* Take photo with camera */}
+              <label className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handlePhotoChange}
+                  id="photo-camera"
+                />
+                <div className="btn btn-secondary w-full cursor-pointer text-center">
+                  📷 Vyfotiť
+                </div>
+              </label>
+            </div>
+            {photo && (
+              <div className="mt-2 p-2 bg-green-50 rounded-lg text-sm text-green-700">
+                ✓ Fotka: {photo.name} ({(photo.size / 1024).toFixed(1)} KB)
+              </div>
+            )}
               className="input"
             />
             {photo && (

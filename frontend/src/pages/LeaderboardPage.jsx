@@ -90,7 +90,7 @@ export default function LeaderboardPage() {
                     </span>
                   )}
                 </div>
-                
+
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
                   <div className="flex items-center gap-1">

@@ -229,27 +229,30 @@ class GameEngine:
             icon='💩'
         )
         
-        # Fastest Player (least time held)
-        fastest = min(leaderboard, key=lambda x: x['time_held'].total_seconds())
-        Achievement.objects.create(
-            user=fastest['user'],
-            achievement_type='fastest_player',
-            title='Fastest Player',
-            description='Player with the least time holding the tag',
-            value=str(fastest['time_held']),
-            icon='⚡'
-        )
+        # Fastest Player (least time held) - only players who actually held the tag
+        players_with_time = [p for p in leaderboard if p['time_held'].total_seconds() > 0]
+        if players_with_time:
+            fastest = min(players_with_time, key=lambda x: x['time_held'].total_seconds())
+            Achievement.objects.create(
+                user=fastest['user'],
+                achievement_type='fastest_player',
+                title='Fastest Player',
+                description='Player with the least time holding the tag',
+                value=str(fastest['time_held']),
+                icon='⚡'
+            )
         
-        # Slowest Player (most time held)
-        slowest = max(leaderboard, key=lambda x: x['time_held'].total_seconds())
-        Achievement.objects.create(
-            user=slowest['user'],
-            achievement_type='slowest_player',
-            title='Slowest Player',
-            description='Player with the most time holding the tag',
-            value=str(slowest['time_held']),
-            icon='🐌'
-        )
+        # Slowest Player (most time held) - only players who actually held the tag
+        if players_with_time:
+            slowest = max(players_with_time, key=lambda x: x['time_held'].total_seconds())
+            Achievement.objects.create(
+                user=slowest['user'],
+                achievement_type='slowest_player',
+                title='Slowest Player',
+                description='Player with the most time holding the tag',
+                value=str(slowest['time_held']),
+                icon='🐌'
+            )
         
         # Most Active Tagger
         most_tags = max(leaderboard, key=lambda x: x['tags_given'])

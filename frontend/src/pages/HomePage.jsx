@@ -124,23 +124,45 @@ export default function HomePage() {
             {recentTags.map((tag) => (
               <div
                 key={tag.id}
-                className="flex items-center justify-between p-3 bg-background rounded-lg"
+                className="p-3 bg-background rounded-lg"
               >
-                <div>
-                  <p className="font-medium">
-                    {tag.tagger_name} → {tag.tagged_name}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {formatDistanceToNow(new Date(tag.tagged_at), {
-                      addSuffix: true,
-                      locale: sk
-                    })}
-                  </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <p className="font-medium">
+                      {tag.tagger_name} → {tag.tagged_name}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {formatDistanceToNow(new Date(tag.tagged_at), {
+                        addSuffix: true,
+                        locale: sk
+                      })}
+                    </p>
+                    {tag.location && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        📍 {tag.location}
+                      </p>
+                    )}
+                    {tag.notes && (
+                      <p className="text-sm text-gray-600 mt-1 italic">
+                        "{tag.notes}"
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-accent font-bold">+{tag.points_awarded}</p>
+                    <p className="text-xs text-gray-600">bodov</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-accent font-bold">+{tag.points_awarded}</p>
-                  <p className="text-xs text-gray-600">bodov</p>
-                </div>
+                {tag.photo && (
+                  <div className="mt-2">
+                    <img 
+                      src={tag.photo} 
+                      alt="Tag photo" 
+                      className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => window.open(tag.photo, '_blank')}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
