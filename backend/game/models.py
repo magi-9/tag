@@ -58,6 +58,17 @@ class GameSettings(models.Model):
     def save(self, *args, **kwargs):
         # Ensure only one instance exists (singleton pattern)
         self.pk = 1
+
+        # Check if current_tag_holder changed
+        try:
+            old_instance = GameSettings.objects.get(pk=1)
+            if old_instance.current_tag_holder != self.current_tag_holder:
+                self.tag_holder_since = timezone.now()
+        except GameSettings.DoesNotExist:
+            # First time creation
+            if self.current_tag_holder and not self.tag_holder_since:
+                self.tag_holder_since = timezone.now()
+
         super().save(*args, **kwargs)
     
     @classmethod

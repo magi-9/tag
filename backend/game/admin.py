@@ -9,6 +9,9 @@ class GameSettingsAdmin(admin.ModelAdmin):
         ('Game Period', {
             'fields': ('game_start_date', 'game_end_date')
         }),
+        ('Current State', {
+            'fields': ('current_tag_holder', 'tag_holder_since')
+        }),
         ('Scoring Rules', {
             'fields': (
                 'tag_points_rank_1', 'tag_points_rank_2', 'tag_points_rank_3',
